@@ -15,6 +15,10 @@ def make_pipeline(state):
     # Stages are dependent on the state
     stages = Stages(state)
 
+    # Create output directories
+    safe_make_dir('alignments')
+    safe_make_dir('variants')
+
     # The original FASTQ files
     # This is a dummy stage. It is useful because it makes a node in the
     # pipeline graph, and gives the pipeline an obvious starting point.
@@ -22,6 +26,26 @@ def make_pipeline(state):
         task_func=stages.original_fastqs,
         name='original_fastqs',
         output=fastq_files)
+
+    # FastQC on all FASTQ files
+    pipeline.transform(
+        task_func=stages.qc_fastqc,
+        name='qc_fastqc',
+        input=output_from('original_fastqs'),
+        filter=formatter(
+            '.+/(?P<readid>[a-zA-Z0-9-.]+)_(?P<lib>[a-zA-Z0-9-]+)_(?P<lane>[a-zA-Z0-9]+)_(?P<sample>[a-zA-Z0-9]+)_1.fastq.gz'),
+        # Add one more inputs to the stage:
+        #    1. The corresponding R2 FASTQ file
+        # e.g. C2WPF.5_Solexa-201237_5_X4311_1.fastq.gz
+        add_inputs=add_inputs(
+            '{path[0]}/{readid[0]}_{lib[0]}_{lane[0]}_{sample[0]}_2.fastq.gz'),
+        # Add an "extra" argument to the state (beyond the inputs and outputs)
+        # which is the sample name. This is needed within the stage for finding out
+        # sample specific configuration options
+        extras=['{readid[0]}', '{lib[0]}', '{lane[0]}', '{sample[0]}'],
+        # extras=['{sample[0]}'],
+        # The output file name is the sample name with a .bam extension.
+        output='alignments/{sample[0]}/{readid[0]}_{lib[0]}_{lane[0]}_{sample[0]}.bam')
 
     # Align paired end reads in FASTQ to the reference producing a BAM file
     pipeline.transform(
