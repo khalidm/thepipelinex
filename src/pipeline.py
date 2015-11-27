@@ -4,6 +4,7 @@ Build the pipeline workflow by plumbing the stages together.
 
 from ruffus import Pipeline, suffix, formatter, add_inputs, output_from
 from stages import Stages
+from utils import safe_make_dir
 
 
 def make_pipeline(state):
