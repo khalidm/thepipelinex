@@ -65,12 +65,11 @@ class Stages(object):
     def qc_fastqc(self, inputs, output, sample_id):
         # def qc_fastqc(self, inputs, bam_out, sample_id):
         '''Assess read quality data on the input FASTQ files'''
-        fastq_file = input
+        fastq_file = inputs
         cores = self.get_stage_options('qc_fastqc', 'cores')
         safe_make_dir('fastqc/{sample}'.format(sample=sample_id))
         # read_group = '"@RG\\tID:{readid}\\tSM:{sample}\\tPU:lib1\\tLN:{lane}\\tPL:Illumina"' \
             # .format(readid=read_id, lib=lib, lane=lane, sample=sample_id)
-        print inputs
         command = 'fastqc --quiet -o {output_dir} {seq} ' \
                   .format(output_dir=output,
                   seq=fastq_file)
