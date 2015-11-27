@@ -38,7 +38,7 @@ class Stages(object):
         self.one_k_g_indels = self.get_options('one_k_g_indels')
         self.one_k_g_highconf_snps = self.get_options('one_k_g_highconf_snps')
         self.hapmap = self.get_options('hapmap')
-        self.interval_hg19 = self.get_options('interval_hg19')
+        self.exome_bed_hg19 = self.get_options('exome_bed_hg19')
         self.CEU_mergeGvcf = self.get_options('CEU_mergeGvcf')
         # self.GBR_mergeGvcf = self.get_options('GBR_mergeGvcf')
         # self.FIN_mergeGvcf = self.get_options('FIN_mergeGvcf')
@@ -117,24 +117,24 @@ class Stages(object):
         cores = self.get_stage_options('chrom_intervals_gatk', 'cores')
         gatk_args = '-T RealignerTargetCreator -R {reference} -I {bam} ' \
                     '--num_threads {threads} --known {mills_hg19} ' \
-                    '--known {one_k_g_indels} -L {interval_hg19} ' \
+                    '--known {one_k_g_indels} -L {exome_bed_hg19} ' \
                     '-o {out}'.format(reference=self.reference, bam=bam_in,
                                       threads=cores, mills_hg19=self.mills_hg19,
                                       one_k_g_indels=self.one_k_g_indels,
-                                      interval_hg19=self.interval_hg19,
+                                      exome_bed_hg19=self.exome_hg19,
                                       out=intervals_out)
         self.run_gatk('chrom_intervals_gatk', gatk_args)
 
     def local_realignment_gatk(self, inputs, bam_out):
         '''Local realign reads using GATK'''
         target_intervals_in, bam_in = inputs
-        gatk_args = "-T IndelRealigner -R {reference} -I {bam} -L {interval_hg19} " \
+        gatk_args = "-T IndelRealigner -R {reference} -I {bam} -L {exome_bed_hg19} " \
                     "-targetIntervals {target_intervals} -known {mills_hg19} " \
                     "-known {one_k_g_indels} " \
                     "-o {out}".format(reference=self.reference, bam=bam_in,
                                       mills_hg19=self.mills_hg19,
                                       one_k_g_indels=self.one_k_g_indels,
-                                      interval_hg19=self.interval_hg19,
+                                      exome_bed_hg19=self.exome_hg19,
                                       target_intervals=target_intervals_in,
                                       out=bam_out)
         self.run_gatk('local_realignment_gatk', gatk_args)
@@ -192,8 +192,8 @@ class Stages(object):
                     "-A SampleList -A SpanningDeletions " \
                     "-A StrandBiasBySample -A StrandOddsRatio " \
                     "-A TandemRepeatAnnotator -A VariantType " \
-                    "-I {bam} -L {interval_list} -o {out}".format(reference=self.reference,
-                                                                  bam=bam_in, interval_list=self.interval_hg19, out=vcf_out)
+                    "-I {bam} -L {exome_bed_hg19} -o {out}".format(reference=self.reference,
+                                                                  bam=bam_in, exome_bed_hg19=self.exome_hg19, out=vcf_out)
         self.run_gatk('call_haplotypecaller_gatk', gatk_args)
 
     def call_haplotypecaller_gatk_nct(self, bam_in, vcf_out):
@@ -204,8 +204,8 @@ class Stages(object):
                     "--num_cpu_threads_per_data_thread 4 " \
                     "--variant_index_type LINEAR " \
                     "--standard_min_confidence_threshold_for_emitting 30.0 " \
-                    "-I {bam} -L {interval_list} -o {out}".format(reference=self.reference,
-                                                                  bam=bam_in, interval_list=self.interval_hg19, out=vcf_out)
+                    "-I {bam} -L {exome_bed_hg19} -o {out}".format(reference=self.reference,
+                                                                  bam=bam_in, exome_bed_hg19=self.exome_hg19, out=vcf_out)
         self.run_gatk('call_haplotypecaller_gatk', gatk_args)
 
     def combine_gvcf_gatk(self, vcf_files_in, vcf_out):
