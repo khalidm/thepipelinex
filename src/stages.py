@@ -70,7 +70,7 @@ class Stages(object):
         safe_make_dir('fastqc/{sample}'.format(sample=sample_id))
         # read_group = '"@RG\\tID:{readid}\\tSM:{sample}\\tPU:lib1\\tLN:{lane}\\tPL:Illumina"' \
             # .format(readid=read_id, lib=lib, lane=lane, sample=sample_id)
-        print fastq_file
+        print fastq_file[0]
         command = 'fastqc --quiet -o {output_dir} {seq} ' \
                   .format(output_dir=output,
                   seq=fastq_file)
